@@ -100,7 +100,7 @@ ID_EX_reg ID_EX(.clk(clk), .reset(reset),
                 .ID_Mem_wr(ID_Mem_wr), .ID_Mem_rd(ID_Mem_rd), .ID_MemtoReg(ID_MemtoReg), .ID_RegWr(ID_Reg_wr),
                 .ID_ALUSrcA(ID_ALUSrcA), .ID_ALUSrcB(ID_ALUSrcB),
                 .ID_ALUOp(ID_ALUOp), .ID_Funct(ID_Funct), .ID_EX_flush(ID_EX_flush),
-                .ID_PC_jal(PC_jump),
+                .ID_PC_jal(IF_ID.PC_plus4),
                 .ID_OpCode(ID_OpCode)
                );
 
@@ -153,7 +153,7 @@ assign EX_Write_register = (ID_EX.RegDst == 2'b01) ? ID_EX.rd :
 EX_MEM_reg EX_MEM(.clk(clk), .reset(reset),
                   .EX_Mem_wr(ID_EX.Mem_wr), .EX_Mem_rd(ID_EX.Mem_rd), .EX_MemtoReg(ID_EX.MemtoReg), .EX_RegWr(ID_EX.RegWr),
                   .EX_ALUout(EX_ALUout), .EX_rt_data(EX_rt_data_forward), .EX_Write_register(EX_Write_register),
-                  .EX_PC_jal(ID_EX.PC_jal)
+                  .EX_PC_jal(ID_EX.PC_plus4)
                  );
 
 // MEM stage

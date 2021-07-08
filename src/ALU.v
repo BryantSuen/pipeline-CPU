@@ -33,7 +33,6 @@ module ALU(ALUConf, Sign, In1, In2, Result);
 			5'b10000: Result <= (In2 >> In1[10:6]);
 			5'b11000: Result <= ({{32{In2[31]}}, In2} >> In1[10:6]);
             5'b11001: Result <= (In2 << In1[10:6]);
-			5'b00011: Result <= In1 & (~In2);
 			default: Result <= 32'h00000000;
 		endcase
     end

@@ -41,7 +41,7 @@ assign PC_src = Branch_hazard ? 2'b01 :
        (OpCode == 6'h00 && (Funct == 6'h08 || Funct == 6'h09))? 2'b11 : 2'b00;
 
 assign Reg_wr = (OpCode == 6'h0 && Funct != 5'h08) || OpCode == 6'h23 || OpCode == 6'h0f || OpCode == 6'h08
-       || OpCode == 6'h09 || OpCode == 6'h0c || OpCode == 6'h0a || OpCode == 6'h0b;
+       || OpCode == 6'h09 || OpCode == 6'h0c || OpCode == 6'h0a || OpCode == 6'h0b || OpCode == 6'h03;
 
 assign ExtOp = OpCode != 6'h0c;
 assign LuiOp = OpCode == 6'h0f;
