@@ -27,7 +27,7 @@ PC pc(.reset(reset), .clk(clk), .PCWrite(PC_write_en),
 
 // IF stage
 wire [31:0] instruction;
-InstructionMemory(.address(PC_cur),
+InstructionMemory IM(.address(PC_cur),
                   .instruction(instruction));
 
 // IF/ID
@@ -38,7 +38,7 @@ IF_ID_reg IF_ID(.clk(clk), .reset(reset),
                 .IF_ID_wr_en(IF_ID_wr_en), .IF_ID_flush(IF_ID_flush));
 
 
-// ID stage
+// ID and WB stage
 wire [4:0] WB_Write_register, ID_rs, ID_rt, ID_rd;
 wire [31:0] ID_rs_data, ID_rt_data;
 wire [31:0] WB_Write_data;
@@ -94,21 +94,19 @@ ID_EX_reg ID_EX(.clk(clk), .reset(reset),
                 .ID_ALUOp(ID_ALUOp), .ID_EX_flush(ID_EX_flush)
                );
 
-// forward_ex
+// EX stage
 wire [1:0] FA_EX, FB_EX;
 Forward_EX forward1(.ID_EX_rs(ID_EX.rs), .ID_EX_rt(ID_EX.rt)
                     .EX_MEM_Write_register(EX_MEM.Write_register), .MEM_WB_Write_register(MEM_WB.Write_register),
                     .EX_MEM_RegWrite(EX_MEM.RegWr), .MEM_WB_RegWrite(MEM_WB.RegWr),
                     .FA_EX(FA_EX), .FB_EX(FB_EX));
 
-// forward_ID
-output [1:0] FA_ID;
+wire [1:0] FA_ID;
 Forward_ID forward2(.IF_ID_rs(IF_ID.instruction[25:21]),
                     .EX_MEM_Write_register(EX_MEM.Write_register), .MEM_WB_Write_register(MEM_WB.Write_register),
                     .ID_EX_RegWrite(ID_EX.RegWr), .EX_MEM_RegWrite(EX_MEM.RegWr), .MEM_WB_RegWrite(MEM_WB.RegWr),
                     .FA_ID(FA_ID));
 
-//Harzard
 Harzard harzard(.ID_EX_rt(ID_EX.rt), .IF_ID_rs(IF_ID.instruction[25:21]), .IF_ID_rt(IF_ID.instruction[20:16]),
                 .ID_EX_Mem_rd(ID_EX.MemtoReg),
                 .IF_ID_OpCode(IF_ID.instruction[31:26]), .IF_ID_Funct(IF_ID.instruction[5:0]),
@@ -116,12 +114,10 @@ Harzard harzard(.ID_EX_rt(ID_EX.rt), .IF_ID_rs(IF_ID.instruction[25:21]), .IF_ID
                 .PC_Wr_en(PC_write_en), .IF_ID_Wr_en(IF_ID_wr_en),
                 .IF_ID_flush(IF_ID_flush), .ID_EX_flush(ID_EX_flush));
 
-// ALUCtrl
 wire EX_sign;
 wire [4:0] EX_ALUConf;
 ALUControl alu_control(.ALUOp(ID_EX.ALUOp),.Funct(ID_EX.Funct),.ALUConf(EX_ALUConf),.Sign(EX_sign));
 
-// ALU
 wire [31:0] EX_ALUout, EX_In1, EX_In2, EX_rs_data_forward, EX_rt_data_forward;
 
 assign EX_rs_data_forward = (FA_EX == 2'b01) ? EX_MEM.ALUout :
@@ -146,7 +142,7 @@ EX_MEM_reg EX_MEM(.clk(clk), .reset(reset),
                   .EX_Mem_wr(ID_EX.Mem_wr), .EX_MemtoReg(ID_EX.MemtoReg), .EX_RegWr(ID_EX.RegWr),
                   .EX_ALUout(EX_ALUout), .EX_rt_data(EX_rt_data_forward), .EX_Write_register(EX_Write_register));
 
-// Bus
+// MEM stage
 wire [31:0] MEM_bus_read_data;
 Bus bus(.clk(clk), .reset(reset),
         .addr(EX_MEM.ALUout),
