@@ -12,7 +12,7 @@ wire [31:0] PC_plus4, PC_branch, PC_jump, PC_jump_reg;
 
 assign PC_plus4 = PC_cur + 4;
 assign PC_branch = ID_EX.PC_plus4 + ID_EX.Imm_ext << 2;
-assign PC_jump = {IF_ID.PC_plus4[31:26], IF_ID.instruction[25:0]};
+assign PC_jump = {IF_ID.PC_plus4[31:28], IF_ID.instruction[25:0], 2'b00};
 assign PC_jump_reg = (FA_ID == 2'b01) ? EX_MEM.ALUout :
        (FA_ID == 2'b10) ? WB_Write_data :
        ID_rs_data;
@@ -28,7 +28,7 @@ PC pc(.reset(reset), .clk(clk), .PCWrite(PC_write_en),
 // IF stage
 wire [31:0] instruction;
 InstructionMemory IM(.address(PC_cur),
-                  .instruction(instruction));
+                     .instruction(instruction));
 
 // IF/ID
 wire IF_ID_wr_en, IF_ID_flush;
@@ -48,7 +48,8 @@ assign ID_rs = IF_ID.instruction_IF[25:21];
 assign ID_rt = IF_ID.instruction_IF[20:16];
 assign ID_rd = IF_ID.instruction_IF[15:11];
 
-assign WB_Write_data = MEM_WB.MemtoReg ? MEM_WB.DM_data : MEM_WB.ALUout;
+assign WB_Write_data = (MEM_WB.MemtoReg == 2'b01) ? MEM_WB.DM_data :
+       (MEM_WB.MemtoReg == 2'b10) ? MEM_WB.PC_jal : MEM_WB.ALUout;
 assign WB_RegWrite = MEM_WB.RegWr;
 assign WB_Write_register = MEM_WB.Write_register;
 
@@ -66,7 +67,8 @@ ImmProcess immprocess(.ExtOp(ID_ExtOp),.LuiOp(ID_LuiOp),.Immediate({IF_ID.instru
 
 
 wire [1:0] ID_RegDst;
-wire ID_Reg_wr, ID_ALUSrcA, ID_ALUSrcB, ID_MemtoReg, ID_Branch;
+wire ID_Reg_wr, ID_ALUSrcA, ID_ALUSrcB, ID_Branch;
+wire [1:0] ID_MemtoReg;
 wire [3:0] ID_ALUOp;
 wire ID_Mem_wr, ID_Mem_rd;
 
@@ -91,7 +93,8 @@ ID_EX_reg ID_EX(.clk(clk), .reset(reset),
                 .ID_ExtOp(ID_ExtOp), .ID_RegDst(ID_RegDst),
                 .ID_Mem_wr(ID_Mem_wr), .ID_Branch(ID_Branch), .ID_MemtoReg(ID_MemtoReg), .ID_RegWr(ID_Reg_wr),
                 .ID_ALUSrcA(ID_ALUSrcA), .ID_ALUSrcB(ID_ALUSrcB),
-                .ID_ALUOp(ID_ALUOp), .ID_EX_flush(ID_EX_flush)
+                .ID_ALUOp(ID_ALUOp), .ID_EX_flush(ID_EX_flush),
+                .ID_PC_jal(PC_jump)
                );
 
 // EX stage
@@ -140,7 +143,9 @@ assign EX_Write_register = (ID_EX.RegDst == 2'b01) ? ID_EX.rd :
 
 EX_MEM_reg EX_MEM(.clk(clk), .reset(reset),
                   .EX_Mem_wr(ID_EX.Mem_wr), .EX_MemtoReg(ID_EX.MemtoReg), .EX_RegWr(ID_EX.RegWr),
-                  .EX_ALUout(EX_ALUout), .EX_rt_data(EX_rt_data_forward), .EX_Write_register(EX_Write_register));
+                  .EX_ALUout(EX_ALUout), .EX_rt_data(EX_rt_data_forward), .EX_Write_register(EX_Write_register),
+                  .EX_PC_jal(ID_EX.PC_jal)
+                 );
 
 // MEM stage
 wire [31:0] MEM_bus_read_data;
@@ -153,6 +158,7 @@ Bus bus(.clk(clk), .reset(reset),
 MEM_WB_reg MEM_WB(.clk(clk), .reset(reset),
                   .MEM_MemtoReg(EX_MEM.MemtoReg), .MEM_RegWr(EX_MEM.RegWr),
                   .MEM_DM_data(MEM_bus_read_data), .MEM_ALUout(EX_MEM.ALUout),
-                  .MEM_Write_register(EX_MEM.Write_register));
+                  .MEM_Write_register(EX_MEM.Write_register),
+                  .MEM_PC_jal(EX_MEM.PC_jal));
 
 endmodule

@@ -16,7 +16,7 @@ input Branch_harzard;
 output Mem_wr, Mem_rd;
 output [3:0] ALUOp;
 output [1:0] RegDst, PC_src;
-output MemtoReg;
+output [1:0] MemtoReg;
 output ALUSrcA, ALUSrcB;
 output Reg_wr;
 output ExtOp, LuiOp;
@@ -55,7 +55,12 @@ assign ALUOp[2:0] =
        (OpCode == 6'h0c)? 3'b100:
        (OpCode == 6'h0a || OpCode == 6'h0b)? 3'b101:
        3'b000;
-assign MemtoReg = OpCode == 6'h23;
+
+// 2'b00 : Reg
+// 2'b01 : Mem
+// 2'b10 : jal
+assign MemtoReg = (OpCode == 6'h23) ? 2'b01 :
+       (OpCode == 6'h03) ? 2'b10 : 2'b00;
 assign Branch = OpCode == 6'h04;
 
 // 2'b01: rd

@@ -8,7 +8,7 @@ module DataMemory (
 
 input reset, clk;
 input [31:0] addr, Write_data;
-input MemRead, MemWrite;
+input Mem_rd, Mem_wr;
 
 output [31:0] Read_data;
 
