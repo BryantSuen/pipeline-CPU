@@ -14,13 +14,13 @@ input EX_MEM_RegWrite, MEM_WB_RegWrite;
 output [1:0] FA_EX, FB_EX;
 
 assign FA_EX = (EX_MEM_RegWrite && EX_MEM_Write_register != 5'b0
-             && (EX_MEM_Write_register == ID_EX_rs))?10 :
+             && (EX_MEM_Write_register == ID_EX_rs))? 2'b01 :
        (MEM_WB_RegWrite && MEM_WB_Write_register != 5'b0
-        && (MEM_WB_Write_register == ID_EX_rs))?01 : 00;
+        && (MEM_WB_Write_register == ID_EX_rs))? 2'b10 : 2'b00;
 
 assign FB_EX = (EX_MEM_RegWrite && EX_MEM_Write_register != 5'b0
-             && (EX_MEM_Write_register == ID_EX_rt))?10 :
+             && (EX_MEM_Write_register == ID_EX_rt))? 2'b01 :
        (MEM_WB_RegWrite && MEM_WB_Write_register != 5'b0
-        && (MEM_WB_Write_register == ID_EX_rt))?01 : 00;
+        && (MEM_WB_Write_register == ID_EX_rt))? 2'b10 : 2'b00;
 
 endmodule

@@ -3,7 +3,7 @@ module ID_EX_reg (
     clk, reset, 
     ID_PC_plus4, ID_rs_data, ID_rt_data, ID_Imm_ext,
     ID_rs, ID_rt, ID_rd, 
-    ID_ExtOp, ID_RegDst, ID_MemWr, ID_Branch, ID_MemtoReg, ID_RegWr,
+    ID_ExtOp, ID_RegDst, ID_Mem_wr, ID_Branch, ID_MemtoReg, ID_RegWr,
     ID_ALUSrcA, ID_ALUSrcB, 
     ID_ALUOp, 
     ID_EX_flush
@@ -12,14 +12,14 @@ module ID_EX_reg (
 input clk, reset;
 input [31:0] ID_PC_plus4, ID_rs_data, ID_rt_data, ID_Imm_ext;
 input [4:0] ID_rs, ID_rt, ID_rd;
-input ID_ExtOp, ID_RegDst, ID_MemWr, ID_Branch, ID_MemtoReg, ID_RegWr;
+input ID_ExtOp, ID_RegDst, ID_Mem_wr, ID_Branch, ID_MemtoReg, ID_RegWr;
 input ID_ALUSrcA, ID_ALUSrcB;
 input [3:0] ID_ALUOp;
 input ID_EX_flush;
 
 reg [31:0] PC_plus4, rs_data, rt_data, Imm_ext;
-reg [4:0] rs, rd, rt;
-reg ExtOp, RegDst, MemWr, Branch, MemtoReg, RegWr;
+reg [4:0] rs, rd, rt, Write_register;
+reg ExtOp, RegDst, Mem_wr, Branch, MemtoReg, RegWr;
 reg ALUSrcA, ALUSrcB;
 reg [3:0] ALUOp;
 
@@ -27,8 +27,8 @@ always @( posedge clk or posedge reset ) begin
 
     if( reset || ID_EX_flush ) begin
         PC_plus4 <= 32'b0; rs_data <= 32'b0; rt_data <= 32'b0; Imm_ext <= 32'b0;
-        rs <= 5'b0; rt <= 5'b0; rd <= 5'b0; 
-        ExtOp <= 0; RegDst <= 0; MemWr <= 0; Branch <= 0; MemtoReg <= 0; RegWr <= 0;
+        rs <= 5'b0; rt <= 5'b0; rd <= 5'b0, Write_register <= 5'b0; 
+        ExtOp <= 0; RegDst <= 0; Mem_wr <= 0; Branch <= 0; MemtoReg <= 0; RegWr <= 0;
         ALUSrcA <= 0; ALUSrcB <= 0;
         ALUOp <= 4'b0;
     end
@@ -36,7 +36,7 @@ always @( posedge clk or posedge reset ) begin
     else begin
         PC_plus4 <= ID_PC_plus4; rs_data <= ID_rs_data; rt_data <= ID_rt_data; Imm_ext <= ID_Imm_ext;
         rs <= ID_rs; rt <= ID_rt; rd <= ID_rd;
-        ExtOp <= ID_ExtOp; RegDst <= ID_RegDst; MemWr <= ID_MemWr; 
+        ExtOp <= ID_ExtOp; RegDst <= ID_RegDst; Mem_wr <= ID_Mem_wr; 
         Branch <= ID_Branch; MemtoReg <= ID_MemtoReg; RegWr <= ID_RegWr;
         ALUSrcA <= ID_ALUSrcA; ALUSrcB <= ID_ALUSrcB;
         ALUOp <= ID_ALUOp;
