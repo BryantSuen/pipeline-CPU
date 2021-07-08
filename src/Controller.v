@@ -4,24 +4,26 @@ module Controller (
          ID_instruction,
          PC_src, RegDst,
          Reg_wr, ExtOp, LuiOp,
-         ALUSrcA, ALUSrcB, ALUOp, MemtoReg, Branch,
+         ALUSrcA, ALUSrcB, ALUOp, Funct, MemtoReg, Branch,
          Mem_wr, Mem_rd,
-         Branch_harzard
+         Branch_hazard
        );
 
 input clk, reset;
 input [31:0] ID_instruction;
-input Branch_harzard;
+input Branch_hazard;
 
 output Mem_wr, Mem_rd;
 output [3:0] ALUOp;
+output [4:0] Funct;
 output [1:0] RegDst, PC_src;
 output [1:0] MemtoReg;
 output ALUSrcA, ALUSrcB;
 output Reg_wr;
+output Branch;
 output ExtOp, LuiOp;
 
-wire [5:0] OpCode, Funct;
+wire [5:0] OpCode;
 
 assign OpCode = ID_instruction[31:26];
 assign Funct = ID_instruction[5:0];
@@ -33,7 +35,7 @@ assign Mem_rd = OpCode == 6'h23;
 // 2'b01: branch
 // 2'b10: j
 // 2'b11: jr
-assign PC_src = Branch_harzard ? 2'b01 :
+assign PC_src = Branch_hazard ? 2'b01 :
        (OpCode == 6'h02 || OpCode == 6'h03) ? 2'b10 :
        (OpCode == 6'h00 && (Funct == 6'h08 || Funct == 6'h09))? 2'b11 : 2'b00;
 

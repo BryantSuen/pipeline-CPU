@@ -1,0 +1,40 @@
+`timescale 1ns / 1ps
+module Hazard (
+         ID_EX_rt, IF_ID_rs, IF_ID_rt,
+         ID_EX_Mem_rd,
+         IF_ID_OpCode, IF_ID_Funct,
+         ID_EX_Branch,
+         rs_forward, rt_forward,
+
+         PC_Wr_en, IF_ID_Wr_en,
+         IF_ID_flush, ID_EX_flush
+       );
+
+input [4:0] ID_EX_rt, IF_ID_rs, IF_ID_rt;
+input ID_EX_Mem_rd; // Mem_rd equals to MemtoReg
+input [5:0] IF_ID_OpCode, IF_ID_Funct;
+input ID_EX_Branch;
+input [31:0] rs_forward, rt_forward;
+
+output PC_Wr_en, IF_ID_Wr_en;
+output IF_ID_flush, ID_EX_flush;
+
+wire load_use_hazard;
+wire Branch_hazard;
+wire Jump_hazard;
+
+//hazard
+assign load_use_hazard = ID_EX_Mem_rd && ((ID_EX_rt == IF_ID_rs) || (ID_EX_rt == IF_ID_rt));
+assign Branch_hazard = ID_EX_Branch && (rs_forward == rt_forward);
+assign Jump_hazard = (IF_ID_OpCode == 6'h02) || (IF_ID_OpCode == 6'h03) ||
+       (IF_ID_OpCode == 6'h0 && ((IF_ID_Funct == 6'h08) || (IF_ID_Funct == 6'h09)));
+
+//load-use
+assign IF_ID_Wr_en = ~load_use_hazard;
+assign PC_Wr_en = ~load_use_hazard;
+
+//branch
+assign IF_ID_flush = Branch_hazard || (IF_ID_Wr_en && Jump_hazard);
+assign ID_EX_flush = Branch_hazard;
+
+endmodule
