@@ -73,7 +73,7 @@ wire [3:0] ID_ALUOp;
 wire ID_Mem_wr, ID_Mem_rd;
 
 wire Branch_hazard;
-wire [4:0] ID_Funct;
+wire [5:0] ID_Funct;
 assign Branch_hazard = ID_EX.Branch && (EX_rs_data_forward == EX_rt_data_forward);
 
 Controller controller(.clk(clk), .reset(reset),
@@ -133,8 +133,8 @@ assign EX_rs_data_forward = (FA_EX == 2'b01) ? EX_MEM.ALUout :
 assign EX_rt_data_forward = (FB_EX == 2'b01) ? EX_MEM.ALUout :
        (FB_EX == 2'b10) ? (MEM_WB.MemtoReg ? MEM_WB.DM_data : MEM_WB.ALUout) :
        ID_EX.rt;
-assign EX_In1 = ID_EX.ALUSrcA ? EX_rs_data_forward : ID_EX.Imm_ext;
-assign EX_In2 = ID_EX.ALUSrcB ? EX_rt_data_forward : ID_EX.Imm_ext;
+assign EX_In1 = ID_EX.ALUSrcA ? ID_EX.Imm_ext : EX_rs_data_forward;
+assign EX_In2 = ID_EX.ALUSrcB ? ID_EX.Imm_ext : EX_rt_data_forward;
 
 
 ALU alu(.ALUConf(EX_ALUConf),.Sign(EX_sign),.In1(EX_In1),.In2(EX_In2),

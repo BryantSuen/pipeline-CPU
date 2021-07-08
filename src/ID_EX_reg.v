@@ -16,7 +16,7 @@ input [4:0] ID_rs, ID_rt, ID_rd;
 input ID_ExtOp, ID_Mem_wr, ID_Mem_rd, ID_Branch, ID_RegWr;
 input ID_ALUSrcA, ID_ALUSrcB;
 input [3:0] ID_ALUOp;
-input [4:0] ID_Funct;
+input [5:0] ID_Funct;
 input ID_EX_flush;
 input [1:0] ID_RegDst, ID_MemtoReg;
 input [31:0] ID_PC_jal;
@@ -26,7 +26,7 @@ reg [4:0] rs, rt, rd;
 reg ExtOp, Mem_wr, Mem_rd, Branch, RegWr;
 reg ALUSrcA, ALUSrcB;
 reg [3:0] ALUOp;
-reg [4:0] Funct;
+reg [5:0] Funct;
 reg [1:0] RegDst, MemtoReg;
 reg [31:0] PC_jal;
 

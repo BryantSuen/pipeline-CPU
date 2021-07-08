@@ -15,7 +15,7 @@ input Branch_hazard;
 
 output Mem_wr, Mem_rd;
 output [3:0] ALUOp;
-output [4:0] Funct;
+output [5:0] Funct;
 output [1:0] RegDst, PC_src;
 output [1:0] MemtoReg;
 output ALUSrcA, ALUSrcB;
@@ -45,7 +45,12 @@ assign Reg_wr = (OpCode == 6'h0 && Funct != 5'h08) || OpCode == 6'h23 || OpCode 
 assign ExtOp = OpCode != 6'h0c;
 assign LuiOp = OpCode == 6'h0f;
 
+// 1'b1: Imm
+// 1'b0: rs
 assign ALUSrcA = OpCode == 6'h00 && (Funct == 6'h00 || Funct == 6'h02 || Funct == 6'h03);
+
+// 1'b1: Imm
+// 1'b0: rt
 assign ALUSrcB = OpCode == 6'h23 || OpCode == 6'h2b || OpCode == 6'h0f || OpCode == 6'h08
        || OpCode == 6'h09 || OpCode == 6'h0c || OpCode == 6'h0a || OpCode == 6'h0b;
 
