@@ -1,16 +1,12 @@
 `timescale 1ns / 1ps
 
 module PC(reset, clk, PCWrite, PC_flush, PC_i, PC_o);
-    //Input Clock Signals
     input reset;             
-    input clk;
-    //Input Control Signals             
-    input PCWrite, PC_flush;
-    //Input PC             
+    input clk;            
+    input PCWrite, PC_flush;           
     input [31:0] PC_i;
-    //Output PC  
+     
     output reg [31:0] PC_o; 
-
 
     always@(posedge reset or posedge clk)
     begin
