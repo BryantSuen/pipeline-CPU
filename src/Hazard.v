@@ -40,6 +40,6 @@ assign PC_Wr_en = ~load_use_hazard;
 
 //branch
 assign IF_ID_flush = Branch_hazard || (IF_ID_Wr_en && Jump_hazard);
-assign ID_EX_flush = Branch_hazard;
+assign ID_EX_flush = Branch_hazard || load_use_hazard;
 
 endmodule
