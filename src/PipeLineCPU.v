@@ -13,9 +13,7 @@ wire [31:0] PC_plus4, PC_branch, PC_jump, PC_jump_reg;
 assign PC_plus4 = PC_cur + 4;
 assign PC_branch = ID_EX.PC_plus4 + (ID_EX.Imm_ext << 2);
 assign PC_jump = {IF_ID.PC_plus4[31:28], IF_ID.instruction[25:0], 2'b00};
-assign PC_jump_reg = (FA_ID == 2'b01) ? EX_MEM.ALUout :
-       (FA_ID == 2'b10) ? WB_Write_data :
-       ID_rs_data;
+assign PC_jump_reg = ID_rs_data_forward;
 
 assign PC_next = (PC_src == 2'b01)? PC_branch:
        (PC_src == 2'b10)? PC_jump:
@@ -58,6 +56,13 @@ RegisterFile RF(.reset(reset), .clk(clk), .RegWrite(WB_RegWrite),
                 .Write_register(WB_Write_register), .Write_data(WB_Write_data),
                 .Read_data1(ID_rs_data), .Read_data2(ID_rt_data));
 
+wire [31:0] ID_rs_data_forward, ID_rt_data_forward;
+assign ID_rs_data_forward = (FA_ID == 2'b01) ? EX_MEM.ALUout :
+       (FA_ID == 2'b10) ? WB_Write_data :
+       ID_rs_data;
+assign ID_rt_data_forward = (FB_ID == 2'b01) ? EX_MEM.ALUout :
+       (FB_ID == 2'b10) ? WB_Write_data :
+       ID_rt_data;
 
 wire ID_ExtOp, ID_LuiOp;
 wire [31:0] ID_ImmExtOut, ID_ImmExtShift;
@@ -94,7 +99,7 @@ Controller controller(.clk(clk), .reset(reset),
 wire ID_EX_flush;
 
 ID_EX_reg ID_EX(.clk(clk), .reset(reset),
-                .ID_PC_plus4(IF_ID.PC_plus4), .ID_rs_data(ID_rs_data), .ID_rt_data(ID_rt_data),.ID_Imm_ext(ID_ImmExtOut),
+                .ID_PC_plus4(IF_ID.PC_plus4), .ID_rs_data(ID_rs_data_forward), .ID_rt_data(ID_rt_data_forward),.ID_Imm_ext(ID_ImmExtOut),
                 .ID_rs(ID_rs), .ID_rt(ID_rt), .ID_rd(ID_rd),
                 .ID_ExtOp(ID_ExtOp), .ID_RegDst(ID_RegDst),
                 .ID_Mem_wr(ID_Mem_wr), .ID_Mem_rd(ID_Mem_rd), .ID_MemtoReg(ID_MemtoReg), .ID_RegWr(ID_Reg_wr),
@@ -111,11 +116,11 @@ Forward_EX forward1(.ID_EX_rs(ID_EX.rs), .ID_EX_rt(ID_EX.rt),
                     .EX_MEM_RegWrite(EX_MEM.RegWr), .MEM_WB_RegWrite(MEM_WB.RegWr),
                     .FA_EX(FA_EX), .FB_EX(FB_EX));
 
-wire [1:0] FA_ID;
-Forward_ID forward2(.IF_ID_rs(IF_ID.instruction[25:21]),
+wire [1:0] FA_ID, FB_ID;
+Forward_ID forward2(.IF_ID_rs(IF_ID.instruction[25:21]), .IF_ID_rt(IF_ID.instruction[20:16]),
                     .EX_MEM_Write_register(EX_MEM.Write_register), .MEM_WB_Write_register(MEM_WB.Write_register),
                     .ID_EX_RegWrite(ID_EX.RegWr), .EX_MEM_RegWrite(EX_MEM.RegWr), .MEM_WB_RegWrite(MEM_WB.RegWr),
-                    .FA_ID(FA_ID));
+                    .FA_ID(FA_ID), .FB_ID(FB_ID));
 
 Hazard hazard(.ID_EX_rt(ID_EX.rt), .IF_ID_rs(IF_ID.instruction[25:21]), .IF_ID_rt(IF_ID.instruction[20:16]),
               .ID_EX_Mem_rd(ID_EX.Mem_rd),
@@ -124,7 +129,9 @@ Hazard hazard(.ID_EX_rt(ID_EX.rt), .IF_ID_rs(IF_ID.instruction[25:21]), .IF_ID_r
               .Branch_hazard(Branch_hazard),
 
               .PC_Wr_en(PC_write_en), .IF_ID_Wr_en(IF_ID_wr_en),
-              .IF_ID_flush(IF_ID_flush), .ID_EX_flush(ID_EX_flush));
+              .IF_ID_flush(IF_ID_flush), .ID_EX_flush(ID_EX_flush),
+              
+              .EX_MEM_Mem_rd(EX_MEM.Mem_rd), .EX_MEM_Write_register(EX_MEM.Write_register));
 
 wire EX_sign;
 wire [4:0] EX_ALUConf;
@@ -133,11 +140,10 @@ ALUControl alu_control(.ALUOp(ID_EX.ALUOp),.Funct(ID_EX.Funct),.ALUConf(EX_ALUCo
 wire [31:0] EX_ALUout, EX_In1, EX_In2, EX_rs_data_forward, EX_rt_data_forward;
 
 assign EX_rs_data_forward = (FA_EX == 2'b01) ? EX_MEM.ALUout :
-       (FA_EX == 2'b10) ? ((MEM_WB.MemtoReg == 2'b01) ? MEM_WB.DM_data : MEM_WB.ALUout) :
-       ID_EX.rs_data;
+       (FA_EX == 2'b10) ? WB_Write_data : ID_EX.rs_data;
 assign EX_rt_data_forward = (FB_EX == 2'b01) ? EX_MEM.ALUout :
-       (FB_EX == 2'b10) ? ((MEM_WB.MemtoReg == 2'b01) ? MEM_WB.DM_data : MEM_WB.ALUout) :
-       ID_EX.rt_data;
+       (FB_EX == 2'b10) ? WB_Write_data : ID_EX.rt_data;
+       
 assign EX_In1 = ID_EX.ALUSrcA ? ID_EX.Imm_ext : EX_rs_data_forward;
 assign EX_In2 = ID_EX.ALUSrcB ? ID_EX.Imm_ext : EX_rt_data_forward;
 
