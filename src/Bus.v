@@ -14,7 +14,8 @@ output [31:0] Read_data;
 
 wire Data_Memory_en, leds_en, bcd7_en, sysclk_en, uart_en;
 
-assign Data_Memory_en = addr <= 32'h7ff;
+//assign Data_Memory_en = addr <= 32'h7ff;
+assign Data_Memory_en = 1'b1;
 assign leds_en = addr == 32'h4000000C;
 assign bcd7_en = addr == 32'h40000010;
 assign sysclk_en = addr == 32'h40000014;

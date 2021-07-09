@@ -23,7 +23,7 @@ always @(posedge clk or posedge reset)
   begin
     if(reset)
       begin
-        for(i = 0; i < RAM_SIZE; i = i + 1)
+        for(i = 20; i < RAM_SIZE; i = i + 1)
           begin
             RAM_data[i] <= 32'b0;
           end

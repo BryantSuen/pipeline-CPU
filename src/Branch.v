@@ -16,8 +16,8 @@ output Branch_hazard;
 // 6'h01: bltz
 assign Branch_hazard = ((ID_EX_OpCode == 6'h04) && (rs_data == rt_data)) ||
        ((ID_EX_OpCode == 6'h05) && (rs_data != rt_data)) ||
-       ((ID_EX_OpCode == 6'h06) && (rs_data <= 32'b0)) ||
-       ((ID_EX_OpCode == 6'h07) && (rs_data > 32'b0)) ||
-       ((ID_EX_OpCode == 6'h01) && (rs_data < 32'b0));
+       ((ID_EX_OpCode == 6'h06) && (rs_data[31] || (rs_data == 32'b0))) ||
+       ((ID_EX_OpCode == 6'h07) && (~rs_data[31] && (rs_data != 32'b0))) ||
+       ((ID_EX_OpCode == 6'h01) && (rs_data[31]));
 
 endmodule
