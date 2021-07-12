@@ -1,8 +1,15 @@
 `timescale 1ns / 1ps
 
-module PipeLineCPU (reset, clk);
+module PipeLineCPU (reset, sysclk, bcd7_data);
 input reset;
-input clk;
+input sysclk;
+
+output [11:0] bcd7_data;
+
+// divider
+wire clk;
+Divider divider(.clk(sysclk), .reset(reset),
+                .clk_div(clk));
 
 // PC
 wire [31:0]PC_cur, PC_next;
@@ -81,8 +88,8 @@ wire Branch_hazard;
 wire [5:0] ID_OpCode, ID_Funct;
 
 Branch branch(.ID_EX_OpCode(ID_EX.OpCode),
-             .rs_data(EX_rs_data_forward), .rt_data(EX_rt_data_forward),
-             .Branch_hazard(Branch_hazard));
+              .rs_data(EX_rs_data_forward), .rt_data(EX_rt_data_forward),
+              .Branch_hazard(Branch_hazard));
 
 Controller controller(.clk(clk), .reset(reset),
                       .ID_instruction(IF_ID.instruction),
@@ -90,7 +97,7 @@ Controller controller(.clk(clk), .reset(reset),
                       .PC_src(PC_src), .RegDst(ID_RegDst),
                       .Reg_wr(ID_Reg_wr), .ExtOp(ID_ExtOp), .LuiOp(ID_LuiOp),
                       .ALUSrcA(ID_ALUSrcA), .ALUSrcB(ID_ALUSrcB), .ALUOp(ID_ALUOp), .Funct(ID_Funct),
-                      .MemtoReg(ID_MemtoReg), 
+                      .MemtoReg(ID_MemtoReg),
                       .Mem_wr(ID_Mem_wr), .Mem_rd(ID_Mem_rd),
                       .Branch_hazard(Branch_hazard));
 
@@ -130,7 +137,7 @@ Hazard hazard(.ID_EX_rt(ID_EX.rt), .IF_ID_rs(IF_ID.instruction[25:21]), .IF_ID_r
 
               .PC_Wr_en(PC_write_en), .IF_ID_Wr_en(IF_ID_wr_en),
               .IF_ID_flush(IF_ID_flush), .ID_EX_flush(ID_EX_flush),
-              
+
               .EX_MEM_Mem_rd(EX_MEM.Mem_rd), .EX_MEM_Write_register(EX_MEM.Write_register));
 
 wire EX_sign;
@@ -143,7 +150,7 @@ assign EX_rs_data_forward = (FA_EX == 2'b01) ? EX_MEM.ALUout :
        (FA_EX == 2'b10) ? WB_Write_data : ID_EX.rs_data;
 assign EX_rt_data_forward = (FB_EX == 2'b01) ? EX_MEM.ALUout :
        (FB_EX == 2'b10) ? WB_Write_data : ID_EX.rt_data;
-       
+
 assign EX_In1 = ID_EX.ALUSrcA ? ID_EX.Imm_ext : EX_rs_data_forward;
 assign EX_In2 = ID_EX.ALUSrcB ? ID_EX.Imm_ext : EX_rt_data_forward;
 
@@ -167,7 +174,8 @@ wire [31:0] MEM_bus_read_data;
 Bus bus(.clk(clk), .reset(reset),
         .addr(EX_MEM.ALUout),
         .Mem_rd(EX_MEM.Mem_rd), .Mem_wr(EX_MEM.Mem_wr),
-        .Write_data(EX_MEM.rt_data), .Read_data(MEM_bus_read_data));
+        .Write_data(EX_MEM.rt_data), .Read_data(MEM_bus_read_data),
+        .bcd7_rd_data(bcd7_data));
 
 // MEM/WB
 MEM_WB_reg MEM_WB(.clk(clk), .reset(reset),
