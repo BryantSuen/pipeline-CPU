@@ -33,6 +33,7 @@ always @(posedge reset or posedge clk)
           begin
             RF_data[i] <= 32'h00000000;
           end
+        RF_data[29] <= 32'h7ff;
       end
     else if (RegWrite && (Write_register != 5'b00000))
       begin

@@ -27,28 +27,18 @@ always @(posedge clk or posedge reset)
           begin
             RAM_data[i] <= 32'b0;
           end
-
-        RAM_data[0] <= 32'd2;
-        RAM_data[1] <= 32'd12;
-        RAM_data[2] <= 32'd1;
-        RAM_data[3] <= 32'd10;
-        RAM_data[4] <= 32'd3;
-        RAM_data[5] <= 32'd20;
-        RAM_data[6] <= 32'd2;
-        RAM_data[7] <= 32'd15;
-        RAM_data[8] <= 32'd1;
-        RAM_data[9] <= 32'd8;
-
-        RAM_data[10] <= 32'd2;
-        RAM_data[11] <= 32'd12;
-        RAM_data[12] <= 32'd1;
-        RAM_data[13] <= 32'd10;
-        RAM_data[14] <= 32'd3;
-        RAM_data[15] <= 32'd20;
-        RAM_data[16] <= 32'd2;
-        RAM_data[17] <= 32'd15;
-        RAM_data[18] <= 32'd1;
-        RAM_data[19] <= 32'd8;
+        RAM_data[0] <= 32'd5;
+        RAM_data[1] <= 32'd5;
+        RAM_data[2] <= 32'd2;
+        RAM_data[3] <= 32'hc;
+        RAM_data[4] <= 32'h1;
+        RAM_data[5] <= 32'ha;
+        RAM_data[6] <= 32'h3;
+        RAM_data[7] <= 32'h14;
+        RAM_data[8] <= 32'h2;
+        RAM_data[9] <= 32'hf;
+        RAM_data[10] <= 32'h1;
+        RAM_data[11] <= 32'h8;
       end
     else if (Mem_wr)
       begin
